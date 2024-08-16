@@ -18,7 +18,7 @@ var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 var first = Number(moment().format("M")) - 1
 var end = Number(moment().format("M")) - 1
 
-function BlockDate(props: { animDate: any; complete: any; }) {
+function BlockDate(props: { animDate: any; complete: any; activeDate:any; }) {
     const [month, setMonth] = useState(monthNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
 
@@ -45,21 +45,25 @@ function BlockDate(props: { animDate: any; complete: any; }) {
             date.setDate(date.getDate() + 1);
         }
         setMonthArr(days)
-    }, [month])
+    }, [month, props.activeDate])
 
     useEffect(() => {
-        const d = getData()
-        console.log(d["18/7"].active);
+        const ttt = async () => {
+            let data: string | null = null
+            await getData().then(res =>{ if(res) { data = JSON.parse(res) } })
+            
+            setMonthArr(days =>
+                days.map((v) => {
+                    if (data && data[`${v.num}/${month}`]?.complete) {
+                        return { num: v.num, complete: true }
+                    }
+                    return v
+                })
+            )
+        }
 
-        setMonthArr(days =>
-            days.map((v) => {
-                if (d[`${v.num}/${month}`]?.active) {
-                    return { num: v.num, complete: true }
-                }
-                return v
-            })
-        )
-    }, [month])
+        ttt()
+    }, [month, props.activeDate])
 
     const handleNext = () => {
         // if (month != end) {

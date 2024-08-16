@@ -4,32 +4,38 @@ import AnimatedProgressWheel from 'react-native-progress-wheel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import BlockDate from "./BlockDate";
+import { editDayWater, getDayWater } from "./_getData";
 
-var now = moment().format("DD/MM");
+// var now = moment().format("DD/MM");
+
+var now = "18/08"
 
 export default function Index() {
   const [maxDay, setMaxDay] = useState(10)
-  const [waterControl, setWaterControl] = useState(0)
   const [count, setCount] = useState(0)
   const [mass, setMass] = useState(new Array(10).fill(0))
   const [activeDate, setActiveDate] = useState(false)
   const [complete, setComplete] = useState(false)
   const animGlass = useState(new Animated.Value(130))[0]
-  const animDate = useState(new Animated.Value(600))[0] 
+  const animDate = useState(new Animated.Value(600))[0]
 
   useEffect(() => {
     const ttt = async () => {
       let start = await AsyncStorage.getItem("start")
-      if(!start) {
+      if (!start) {
         var month = Number(moment().format("M")) - 1
         AsyncStorage.setItem("start", month.toString())
       }
       let end = await AsyncStorage.getItem("end")
-      if(!end) {
+      if (!end) {
         var month = Number(moment().format("M")) - 1
         AsyncStorage.setItem("end", month.toString())
       }
-
+      let c = 0
+      await getDayWater().then(res => { if (res) { c = JSON.parse(res) } })
+      if (c.date == now) {
+        setCount(Number(c?.count))
+      }
       // if (a) {
       //   // setCount(Number(a))
       // } else {
@@ -41,11 +47,17 @@ export default function Index() {
     ttt()
   }, [])
 
+  // useEffect(() => {
+  //   let ttt = async () => {
+  //     await AsyncStorage.clear()
+  //   }
+  //   ttt()
+  // }, [])
+
   const handleClickButton = () => {
     if (maxDay > count) {
-      setWaterControl(water => water + 100 / maxDay);
+      editDayWater(count + 1, now)
       setCount(count => count + 1)
-
       Animated.timing(animGlass, {
         toValue: 150,
         duration: 300,
@@ -59,11 +71,11 @@ export default function Index() {
           useNativeDriver: false
         }).start()
       }, 300)
-    } 
+    }
   }
 
   const handleClickDate = () => {
-    if(!activeDate) {
+    if (!activeDate) {
       Animated.timing(animDate, {
         toValue: 0,
         duration: 300,
@@ -82,11 +94,34 @@ export default function Index() {
 
   useEffect(() => {
     // AsyncStorage.setItem("count", count.toString());
-    
-    if(count >= maxDay) {
+
+    if (count >= maxDay) {
       setComplete(true)
     }
   }, [count])
+
+  useEffect(() => {
+
+    const addItem = async (a: any) => {
+      let oldData = {}
+      await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
+      console.log(oldData);
+
+      await AsyncStorage.setItem("data", JSON.stringify({ ...oldData, ...a }))
+
+    }
+
+    if (complete) {
+      let s = now.split("/")
+      let newDay = Number(s[0]) + "/" + (Number(s[1]) - 1)
+      let a = {
+        [newDay]: {
+          complete: true
+        }
+      }
+      addItem(a)
+    }
+  }, [complete])
 
   return (
     <SafeAreaView style={styles.root}>
@@ -97,11 +132,11 @@ export default function Index() {
         <Text style={styles.headerText}>Logo</Text>
       </View>
       <View style={styles.main}>
-        <View style={{ position: "relative", flex: 1, width: "100%", justifyContent: "center", alignItems: "center"}}>
+        <View style={{ position: "relative", flex: 1, width: "100%", justifyContent: "center", alignItems: "center" }}>
           <View style={{ position: "relative", flex: 1, justifyContent: "center", alignItems: "center", top: -100 }}>
             <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: 500, marginBottom: 10 }}>{now}</Text>
             <View style={styles.wrapperCircle}>
-              <AnimatedProgressWheel size={350} width={10} color={'#1976D2'} progress={waterControl} backgroundColor={'#BBDEFB'} rotation="-90deg" duration={600} />
+              <AnimatedProgressWheel size={350} width={10} color={'#1976D2'} progress={count * 100 / maxDay} backgroundColor={'#BBDEFB'} rotation="-90deg" duration={600} />
             </View>
             {count < maxDay
               ?
@@ -127,7 +162,7 @@ export default function Index() {
             })}
           </View>
         </View>
-        <BlockDate animDate={animDate} complete={complete}/>
+        <BlockDate animDate={animDate} complete={complete} activeDate={activeDate} />
       </View>
     </SafeAreaView>
   );
