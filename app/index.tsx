@@ -19,7 +19,17 @@ export default function Index() {
 
   useEffect(() => {
     const ttt = async () => {
-      let a = await AsyncStorage.getItem("count")
+      let start = await AsyncStorage.getItem("start")
+      if(!start) {
+        var month = Number(moment().format("M")) - 1
+        AsyncStorage.setItem("start", month.toString())
+      }
+      let end = await AsyncStorage.getItem("end")
+      if(!end) {
+        var month = Number(moment().format("M")) - 1
+        AsyncStorage.setItem("end", month.toString())
+      }
+
       // if (a) {
       //   // setCount(Number(a))
       // } else {
@@ -71,7 +81,8 @@ export default function Index() {
   }
 
   useEffect(() => {
-    AsyncStorage.setItem("count", count.toString());
+    // AsyncStorage.setItem("count", count.toString());
+    
     if(count >= maxDay) {
       setComplete(true)
     }
@@ -116,7 +127,7 @@ export default function Index() {
             })}
           </View>
         </View>
-        <BlockDate animDate={animDate} complete={complete} now={now}/>
+        <BlockDate animDate={animDate} complete={complete}/>
       </View>
     </SafeAreaView>
   );
