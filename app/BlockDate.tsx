@@ -92,8 +92,8 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                 <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month]}</Text>
                 <TouchableWithoutFeedback onPress={handlePrev}>
                     <Svg
-                        width={widthPers * 6}
-                        height={widthPers * 6}
+                        width={widthPers * 8}
+                        height={widthPers * 8}
                         viewBox="0 0 24 24"
                         style={{marginRight: (widthPers * 1.8)}}
                     >
@@ -111,8 +111,8 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback onPress={handleNext}>
                     <Svg
-                        width={widthPers * 6}
-                        height={widthPers * 6}
+                        width={widthPers * 8}
+                        height={widthPers * 8}
                         viewBox="0 0 24 24"
                         rotation={180}
                     >

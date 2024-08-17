@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { Text, View, ScrollView, TextInput, StyleSheet, SafeAreaView, Image, TouchableWithoutFeedback, Animated, Dimensions, Button } from "react-native";
 import AnimatedProgressWheel from 'react-native-progress-wheel';
@@ -22,6 +22,7 @@ export default function Index() {
   const animDate = useState(new Animated.Value(600))[0]
   const [text, setText] = useState("10")
   const [loading, setLoading] = useState(false)
+  const [errorInput, setErrorInput] = useState(false)
 
   useEffect(() => {
     const ttt = async () => {
@@ -66,6 +67,9 @@ export default function Index() {
 
   useEffect(() => {
     setMass(new Array(maxDay).fill(0))
+    if (maxDay < count) {
+      setCount(maxDay)
+    }
   }, [maxDay])
 
   // useEffect(() => {
@@ -96,6 +100,9 @@ export default function Index() {
   }
 
   const handleClickDate = () => {
+    if(firstRun) {
+      setFisrtRun(false)
+    }
     if (!activeDate) {
       Animated.timing(animDate, {
         toValue: 0,
@@ -145,24 +152,42 @@ export default function Index() {
 
   const handleClickModal = () => {
     const ttt = async () => {
-      await AsyncStorage.setItem("maxDay", text)
-      console.log("123");
-      setFisrtRun(false)
-      setMaxDay(Number(text))
-      setCount(0)
+      if (!errorInput) {
+        await AsyncStorage.setItem("maxDay", text)
+        setFisrtRun(false)
+        setMaxDay(Number(text))
+      } 
     }
     ttt()
   }
 
   const handleClickWater = () => {
-    setFisrtRun(true)
+    setFisrtRun(v => !v)
+    if(activeDate) {
+      Animated.timing(animDate, {
+        toValue: 600,
+        duration: 300,
+        useNativeDriver: false
+      }).start()
+      setActiveDate(v => !v)
+    }
+  }
+
+  const handleChangeInput = (v: string) => {
+    setText(v)
+    if (Number(v) >= 3 && Number(v) <= 10) {
+      setErrorInput(false)
+    } else {
+      setErrorInput(true)
+    }
   }
 
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
-      <TouchableWithoutFeedback onPress={handleClickWater}>
+        <TouchableWithoutFeedback onPress={handleClickWater}>
           <View style={{ height: 48, width: 48, position: "absolute", left: 6, top: 6, justifyContent: "center", alignItems: "center", backgroundColor: "#BBDEFB", borderRadius: 10 }}>
+            <Image source={require("../assets/images/setting.png")} style={{ height: 36, width: 36 }} />
           </View>
         </TouchableWithoutFeedback>
         <Text style={styles.headerText}>Logo</Text>
@@ -200,7 +225,7 @@ export default function Index() {
                   <Image source={require("../assets/images/accept.png")} style={{ height: 130, width: 130, cursor: "pointer" }} />
                 </View>
               }
-              <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: "500" }}>{count}/{maxDay}</Text>
+              <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: "500" }}>{count * 250} мл</Text>
             </View>
             <View style={{ flexWrap: "wrap", flexDirection: "row", gap: (widthPers * 2), width: (widthPers * 88), height: (widthPers * 34), marginTop: "auto", alignItems: "center", justifyContent: "center" }}>
               {mass.map((_, i) => {
@@ -230,7 +255,8 @@ export default function Index() {
       }
       {firstRun == true &&
         <View style={styles.modelWrapper}>
-          <TextInput style={{ height: 20, width: 100, zIndex: 120, borderWidth: 2, marginBottom: 15 }} keyboardType="numeric" value={text} onChangeText={setText} />
+          <Text style={{ fontSize: 20, fontWeight: "500", lineHeight: 20, color: "#1976D2" }}>Настройки</Text>
+          <TextInput style={[styles.inputMax, errorInput && styles.inputMaxInvalid]} keyboardType="number-pad" value={text} onChangeText={(v) => handleChangeInput(v)} />
           <Button title="Click" onPress={handleClickModal} />
         </View>
       }
@@ -279,15 +305,27 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "50%",
     left: "50%",
-    width: 200,
+    width: 250,
     height: 200,
     backgroundColor: "#BBDEFB",
     zIndex: 120,
-    transform: [{ translateX: -100 }, { translateY: -100 }],
+    transform: [{ translateX: -125 }, { translateY: -100 }],
     borderColor: "#1976d2",
     borderWidth: 2,
     borderRadius: 25,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "space-between",
+    padding: 15,
+    flexDirection: "column"
+  },
+  inputMax: {
+    width: "100%",
+    zIndex: 120,
+    borderWidth: 2,
+    marginBottom: 15,
+    paddingHorizontal: 5
+  },
+  inputMaxInvalid: {
+    borderColor:"red"
   }
 })
