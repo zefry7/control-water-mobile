@@ -1,14 +1,15 @@
+import React from "react";
 import { useEffect, useState } from "react";
-import { Text, View, StyleSheet, SafeAreaView, Image, TouchableWithoutFeedback, Animated } from "react-native";
+import { Text, View, ScrollView, StyleSheet, SafeAreaView, Image, TouchableWithoutFeedback, Animated, Dimensions } from "react-native";
 import AnimatedProgressWheel from 'react-native-progress-wheel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import BlockDate from "./BlockDate";
-import { editDayWater, getDayWater } from "./_getData";
+import { editDayWater, getDayWater, widthPers } from "./_getData";
+import Svg, { Path } from "react-native-svg";
 
-// var now = moment().format("DD/MM");
-
-var now = "18/08"
+var now = moment().format("DD/MM");
+// var now = "18/08"
 
 export default function Index() {
   const [maxDay, setMaxDay] = useState(10)
@@ -36,6 +37,7 @@ export default function Index() {
       if (c.date == now) {
         setCount(Number(c?.count))
       }
+
       // if (a) {
       //   // setCount(Number(a))
       // } else {
@@ -45,6 +47,8 @@ export default function Index() {
       // }
     }
     ttt()
+    console.log(Dimensions.get("window").width);
+
   }, [])
 
   // useEffect(() => {
@@ -89,11 +93,9 @@ export default function Index() {
       }).start()
     }
     setActiveDate(v => !v)
-
   }
 
   useEffect(() => {
-    // AsyncStorage.setItem("count", count.toString());
 
     if (count >= maxDay) {
       setComplete(true)
@@ -127,43 +129,66 @@ export default function Index() {
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
         <TouchableWithoutFeedback onPress={handleClickDate}>
-          <View style={{ height: 40, width: 40, backgroundColor: "#1976D2", position: "absolute", right: 10, top: 10 }}></View>
+          <View style={{ height: 48, width: 48, position: "absolute", right: 6, top: 6, justifyContent:"center", alignItems:"center", backgroundColor:"#BBDEFB", borderRadius: 10 }}>
+            <Image source={require("../assets/images/date.png")} style={{height: 35, width: 35}}/>
+          </View>
         </TouchableWithoutFeedback>
         <Text style={styles.headerText}>Logo</Text>
       </View>
-      <View style={styles.main}>
-        <View style={{ position: "relative", flex: 1, width: "100%", justifyContent: "center", alignItems: "center" }}>
-          <View style={{ position: "relative", flex: 1, justifyContent: "center", alignItems: "center", top: -100 }}>
-            <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: 500, marginBottom: 10 }}>{now}</Text>
+      <ScrollView style={styles.main} contentContainerStyle={{flex: 1}}>
+        <View style={{ flex: 1, width: "100%", justifyContent: "center", alignItems: "center", paddingVertical:(widthPers * 11) }}>
+          <View style={{justifyContent: "center", alignItems: "center", height:(widthPers * 88), position:"relative", marginBottom:30  }}>
+            <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: "500", marginBottom: 10 }}>{now}</Text>
             <View style={styles.wrapperCircle}>
-              <AnimatedProgressWheel size={350} width={10} color={'#1976D2'} progress={count * 100 / maxDay} backgroundColor={'#BBDEFB'} rotation="-90deg" duration={600} />
+              <AnimatedProgressWheel size={widthPers * 88} width={widthPers * 2} color={'#1976D2'} progress={count * 100 / maxDay} backgroundColor={'#BBDEFB'} rotation="-90deg" duration={600} />
             </View>
             {count < maxDay
               ?
               <View style={{ maxHeight: 150, width: 150, flex: 1, justifyContent: "center", alignItems: "center", marginBottom: 10 }}>
                 <TouchableWithoutFeedback style={{ height: 350, width: 350 }} onPress={handleClickButton}>
                   <Animated.View style={{ height: animGlass }}>
-                    <Image source={{ uri: "assets/images/glass.svg" }} style={{ height: "100%", width: 130, cursor: "pointer" }} />
+                    <Svg width={widthPers * 36} height={widthPers * 36} fill="none" viewBox="0 0 24 24">
+                      <Path
+                        fill="#1976D2"
+                        fillRule="evenodd"
+                        d="M5.161 1a2 2 0 0 0-1.978 2.297l2.573 17.148A3 3 0 0 0 8.722 23h6.556a3 3 0 0 0 2.966-2.555l2.573-17.148A2 2 0 0 0 18.839 1H5.16Zm0 2H18.84l-.6 4H5.76l-.6-4Zm.9 6 1.672 11.148a1 1 0 0 0 .99.852h6.555a1 1 0 0 0 .989-.852L17.939 9H6.06Z"
+                        clipRule="evenodd"
+                      />
+                    </Svg>
                   </Animated.View>
                 </TouchableWithoutFeedback>
               </View>
               : <View style={{ maxHeight: 150, width: 150, flex: 1, justifyContent: "center", alignItems: "center", marginBottom: 10 }}>
-                <Image source={{ uri: "assets/images/accept.png" }} style={{ height: "100%", width: 130, cursor: "pointer" }} />
+                <Image source={require("../assets/images/accept.png")} style={{ height: 130, width: 130, cursor: "pointer" }} />
               </View>
             }
-            <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: 500 }}>{count}/{maxDay}</Text>
+            <Text style={{ fontSize: 24, lineHeight: 24, color: '#1976D2', fontWeight: "500" }}>{count}/{maxDay}</Text>
           </View>
-          <View style={{ flexWrap: "wrap", flexDirection: "row", gap: 10, width: "100%", maxWidth: 340, position: "absolute", bottom: 120 }}>
+          <View style={{ flexWrap: "wrap", flexDirection: "row", gap: (widthPers * 2),  width: (widthPers * 88), marginTop: "auto" }}>
             {mass.map((_, i) => {
               if (count >= i + 1) {
-                return <Image source={{ uri: "assets/images/glass.svg" }} key={i} style={{ height: 60, width: 60, opacity: 1 }} />
+                return <Svg width={widthPers * 16} height={widthPers * 16} fill="none" viewBox="0 0 24 24" key={i} >
+                  <Path
+                    fill="#1976D2"
+                    fillRule="evenodd"
+                    d="M5.161 1a2 2 0 0 0-1.978 2.297l2.573 17.148A3 3 0 0 0 8.722 23h6.556a3 3 0 0 0 2.966-2.555l2.573-17.148A2 2 0 0 0 18.839 1H5.16Zm0 2H18.84l-.6 4H5.76l-.6-4Zm.9 6 1.672 11.148a1 1 0 0 0 .99.852h6.555a1 1 0 0 0 .989-.852L17.939 9H6.06Z"
+                    clipRule="evenodd"
+                  />
+                </Svg>
               }
-              return <Image source={{ uri: "assets/images/glass.svg" }} key={i} style={{ height: 60, width: 60, opacity: 0.5 }} />
+              return <Svg width={widthPers * 16} height={widthPers * 16} fill="none" viewBox="0 0 24 24" key={i} opacity={0.5} >
+                <Path
+                  fill="#1976D2"
+                  fillRule="evenodd"
+                  d="M5.161 1a2 2 0 0 0-1.978 2.297l2.573 17.148A3 3 0 0 0 8.722 23h6.556a3 3 0 0 0 2.966-2.555l2.573-17.148A2 2 0 0 0 18.839 1H5.16Zm0 2H18.84l-.6 4H5.76l-.6-4Zm.9 6 1.672 11.148a1 1 0 0 0 .99.852h6.555a1 1 0 0 0 .989-.852L17.939 9H6.06Z"
+                  clipRule="evenodd"
+                />
+              </Svg>
             })}
           </View>
         </View>
         <BlockDate animDate={animDate} complete={complete} activeDate={activeDate} />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 
@@ -173,7 +198,9 @@ const styles = StyleSheet.create({
   root: {
     backgroundColor: "#e3f2fd",
     flex: 1,
-    overflow: "hidden"
+    fontWeight: "500",
+    overflow:"hidden",
+    height:"100%",
   },
   header: {
     backgroundColor: "#2196f3",
@@ -183,17 +210,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     justifyContent: "center",
     alignItems: "center",
+    zIndex:100
   },
   headerText: {
     fontSize: 24,
     color: "#e3f2fd",
     textTransform: "uppercase",
-    fontWeight: 500,
+    fontWeight: "500",
   },
   main: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    minHeight: Dimensions.get("window").height - 60,
+    height: "100%",
+    flex: 1
   },
   wrapperCircle: {
     alignItems: "center",

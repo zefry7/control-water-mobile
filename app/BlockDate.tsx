@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { Animated, Image, Text, TouchableWithoutFeedback, View } from "react-native";
-import { getData } from "./_getData";
+import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
+import { getData, widthPers } from "./_getData";
+import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
     num: number,
@@ -18,7 +19,7 @@ var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 var first = Number(moment().format("M")) - 1
 var end = Number(moment().format("M")) - 1
 
-function BlockDate(props: { animDate: any; complete: any; activeDate:any; }) {
+function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
 
@@ -50,8 +51,8 @@ function BlockDate(props: { animDate: any; complete: any; activeDate:any; }) {
     useEffect(() => {
         const ttt = async () => {
             let data: string | null = null
-            await getData().then(res =>{ if(res) { data = JSON.parse(res) } })
-            
+            await getData().then(res => { if (res) { data = JSON.parse(res) } })
+
             setMonthArr(days =>
                 days.map((v) => {
                     if (data && data[`${v.num}/${month}`]?.complete) {
@@ -85,38 +86,71 @@ function BlockDate(props: { animDate: any; complete: any; activeDate:any; }) {
         }
     }
 
-    return <Animated.View style={{ backgroundColor: "#BBDEFB", width: "100%", height: "100%", position: "absolute", left: props.animDate, }}>
-        <View style={{ maxWidth: 340, marginHorizontal: "auto" }}>
+    return <Animated.View style={{ backgroundColor: "#BBDEFB", width: "100%", height: "100%", position: "absolute", left: props.animDate, zIndex:50 }}>
+        <View style={{ maxWidth: (widthPers * 88), marginHorizontal: "auto" }}>
             <View style={{ paddingTop: 20, marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
-                <Text style={{ fontSize: 20, fontWeight: 500, marginRight: "auto" }}>{listMonth[month]}</Text>
+                <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month]}</Text>
                 <TouchableWithoutFeedback onPress={handlePrev}>
-                    <Image source={{ uri: "assets/images/arrow.svg" }} style={{ height: 25, width: 25, marginRight: 15 }} />
+                    <Svg
+                        width={widthPers * 6}
+                        height={widthPers * 6}
+                        viewBox="0 0 24 24"
+                        style={{marginRight: (widthPers * 1.8)}}
+                    >
+                        <G
+                            fill="none"
+                            stroke="#000"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                        >
+                            <Path d="m7.6 7-5.1 5 5.1 5" data-name="Right" />
+                            <Path d="M21.5 12H4.8" />
+                        </G>
+                    </Svg>
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback onPress={handleNext}>
-                    <Image source={{ uri: "assets/images/arrow.svg" }} style={{ height: 25, width: 25, transform: [{ rotateZ: "180deg" }] }} />
+                    <Svg
+                        width={widthPers * 6}
+                        height={widthPers * 6}
+                        viewBox="0 0 24 24"
+                        rotation={180}
+                    >
+                        <G
+                            fill="none"
+                            stroke="#000"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                        >
+                            <Path d="m7.6 7-5.1 5 5.1 5" data-name="Right" />
+                            <Path d="M21.5 12H4.8" />
+                        </G>
+                    </Svg>
                 </TouchableWithoutFeedback>
             </View>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginHorizontal: "auto" }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: (widthPers * 1.8), marginHorizontal: "auto" }}>
                 {dayWeek.map((day, i) => (
-                    <View key={i} style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", }}>
-                        <Text style={{ textTransform: "uppercase", fontWeight: 500 }}>{day}</Text>
+                    <View key={i} style={{ height: (widthPers * 11), width: (widthPers * 11), alignItems: "center", justifyContent: "center", }}>
+                        <Text style={{ textTransform: "uppercase", fontWeight: "500" }}>{day}</Text>
                     </View>
                 ))}
             </View>
-            <View style={{ width: 340, height: 2, backgroundColor: "#1976d2", marginHorizontal: "auto" }}></View>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginHorizontal: "auto", maxWidth: 340, top: 10 }}>
+            <View style={{ width: (widthPers * 88), height: 2, backgroundColor: "#1976d2", marginHorizontal: "auto" }}></View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: (widthPers * 1.8), marginHorizontal: "auto", maxWidth: (widthPers * 88), top: 10 }}>
                 {monthArr?.map((v, i) => {
                     if (v.num == -1) {
-                        return <View key={i} style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: "50%", opacity: 1 }}>
+                        return <View key={i} style={[styles.dataWrapper, { opacity: 0 }]}>
+                            <Text style={{ fontSize: 16, color: "#e3f2fd", fontWeight: "500" }}>{v.num}</Text>
                         </View>
                     }
                     if (v.complete) {
-                        return <View key={i} style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", backgroundColor: "#1976D2", borderRadius: "50%", opacity: 1 }}>
-                            <Text style={{ fontSize: 16, lineHeight: 0, color: "#e3f2fd", fontWeight: 500 }}>{v.num}</Text>
+                        return <View key={i} style={[styles.dataWrapper, styles.dataActive]}>
+                            <Text style={{ fontSize: 16, color: "#e3f2fd", fontWeight: "500" }}>{v.num}</Text>
                         </View>
                     }
-                    return <View key={i} style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", backgroundColor: "#E3F2FD", borderRadius: "50%", opacity: 0.5 }}>
-                        <Text style={{ fontSize: 16, lineHeight: 0, fontWeight: 500 }}>{v.num}</Text>
+                    return <View key={i} style={[styles.dataWrapper, styles.dataDefault]}>
+                        <Text style={{ fontSize: 16, fontWeight: "500" }}>{v.num}</Text>
                     </View>
                 })}
             </View>
@@ -125,3 +159,23 @@ function BlockDate(props: { animDate: any; complete: any; activeDate:any; }) {
 }
 
 export default BlockDate;
+
+const styles = StyleSheet.create({
+    dataWrapper: {
+        height: (widthPers * 11), 
+        width: (widthPers * 11), 
+        alignItems: "center", 
+        justifyContent: "center", 
+        borderRadius:100, 
+        opacity: 1,
+        backgroundColor:"#ffffff"
+    },
+    dataActive: {
+        backgroundColor: "#1976D2",
+        opacity: 1
+    },
+    dataDefault: {
+        backgroundColor: "#E3F2FD",
+        opacity: 0.5
+    }
+})

@@ -1,4 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { Dimensions } from "react-native"
+
+export var widthPers = Dimensions.get("window").width / 100
 
 export async function getData() {
     // const data = {
