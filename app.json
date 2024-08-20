@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "todoList",
-    "slug": "todoList",
+    "name": "water",
+    "slug": "water",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#2196f3"
       },
-      "package": "com.zefry7.todoList"
+      "package": "com.zefry7.water"
     },
     "web": {
       "bundler": "metro",

@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
-import { getData, widthPers } from "./_getData";
+import { getData, widthPers } from "../scripts/_getData";
 import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
@@ -22,6 +22,8 @@ var end = Number(moment().format("M")) - 1
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
+    const [allDays, setAllDays] = useState(0)
+    const [maxDay, setMaxDay] = useState(0)
 
     useEffect(() => {
         let f = async () => {
@@ -35,9 +37,7 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                 end = parseInt(a)
             }
         }
-
         f()
-
         let date = new Date(yearNow, month, 1)
         let weekDay = date.getDay()
         let days = new Array<Day>(listDayWeek[weekDay]).fill({ num: -1, complete: false })
@@ -86,16 +86,26 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
         }
     }
 
-    return <Animated.View style={{ backgroundColor: "#BBDEFB", width: "100%", height: "100%", position: "absolute", left: props.animDate, zIndex:50 }}>
-        <View style={{ maxWidth: (widthPers * 88), marginHorizontal: "auto" }}>
-            <View style={{ paddingTop: 20, marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
+    return <Animated.View style={{ backgroundColor: "#BBDEFB", width: "100%", height: "100%", position: "absolute", left: props.animDate, zIndex: 50 }}>
+        <View style={{ maxWidth: (widthPers * 88), marginHorizontal: "auto", paddingTop: 20 }}>
+            <View style={{ marginBottom: 20 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#E3F2FD", padding: 10, borderRadius: 20, marginBottom: 10 }}>
+                    <Text style={{ fontSize: 16 }}>Количество выполненных дней</Text>
+                    <Text style={{ backgroundColor: "#90CAF9", fontSize: 18, height: 40, width: 40, borderRadius: 100, textAlign: "center", lineHeight: 40 }}>{allDays}</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#E3F2FD", padding: 10, borderRadius: 20 }}>
+                    <Text style={{ fontSize: 16 }}>Количество дней подряд</Text>
+                    <Text style={{ backgroundColor: "#90CAF9", fontSize: 18, height: 40, width: 40, borderRadius: 100, textAlign: "center", lineHeight: 40 }}>{maxDay}</Text>
+                </View>
+            </View>
+            <View style={{ marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
                 <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month]}</Text>
                 <TouchableWithoutFeedback onPress={handlePrev}>
                     <Svg
                         width={widthPers * 8}
                         height={widthPers * 8}
                         viewBox="0 0 24 24"
-                        style={{marginRight: (widthPers * 1.8)}}
+                        style={{ marginRight: (widthPers * 1.8) }}
                     >
                         <G
                             fill="none"
@@ -162,13 +172,13 @@ export default BlockDate;
 
 const styles = StyleSheet.create({
     dataWrapper: {
-        height: (widthPers * 11), 
-        width: (widthPers * 11), 
-        alignItems: "center", 
-        justifyContent: "center", 
-        borderRadius:100, 
+        height: (widthPers * 11),
+        width: (widthPers * 11),
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 100,
         opacity: 1,
-        backgroundColor:"#ffffff"
+        backgroundColor: "#ffffff"
     },
     dataActive: {
         backgroundColor: "#1976D2",
