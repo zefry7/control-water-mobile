@@ -2,13 +2,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
-import { getData, widthPers } from "../scripts/_getData";
+import { getData, getDataAllDays, setDataAllDays, widthPers } from "../scripts/_getData";
 import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
     num: number,
     complete: boolean
 }
+
+// var now = moment().format("DD");
+var now = 18
 
 var monthNow = Number(moment().format("M")) - 1;
 var yearNow = Number(moment().format("Y"))
@@ -19,10 +22,13 @@ var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 var first = Number(moment().format("M")) - 1
 var end = Number(moment().format("M")) - 1
 
+var ddd = 0
+getDataAllDays().then(v => ddd = v)
+
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
-    const [allDays, setAllDays] = useState(0)
+    const [allDays, setAllDays] = useState(ddd)
     const [maxDay, setMaxDay] = useState(0)
 
     useEffect(() => {
@@ -65,6 +71,22 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
 
         ttt()
     }, [month, props.activeDate])
+
+    useEffect(() => {
+        const func = async () => {
+            let oldData = {}
+            await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
+            if (props.complete && oldData[`${now}/7`] == null) {
+                setDataAllDays(allDays + 1)
+                setAllDays(v => v + 1)
+            }
+        }
+        func()
+    }, [props.complete])
+
+    // useEffect(() => {
+    //     getDataAllDays(setAllDays)
+    // }, [props.activeDate])
 
     const handleNext = () => {
         // if (month != end) {

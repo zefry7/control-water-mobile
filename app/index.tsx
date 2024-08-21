@@ -5,15 +5,15 @@ import AnimatedProgressWheel from 'react-native-progress-wheel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import BlockDate from "./BlockDate";
-import { editDayWater, getDayWater, widthPers } from "../scripts/_getData";
+import { editDayWater, getAllDays, getDataAllDays, getDayWater, setAllDays, setDataAllDays, widthPers } from "../scripts/_getData";
 import Svg, { Path } from "react-native-svg";
 import { useNotificationObserver } from "@/scripts/useNotificationObserver";
 
-var now = moment().format("DD/MM");
-// var now = "18/08"
+// var now = moment().format("DD/MM");
+var now = "18/08"
 
 export default function Root() {
-  const [countDay, setcountDay] = useState(10)
+  const [countDay, setCountDay] = useState(10)
   const [count, setCount] = useState(0)
   const [mass, setMass] = useState(new Array(1).fill(0))
   const [activeDate, setActiveDate] = useState(false)
@@ -45,7 +45,7 @@ export default function Root() {
         setFisrtRun(true)
       } else {
         console.log(t);
-        setcountDay(Number(t))
+        setCountDay(Number(t))
       }
       if (c.date == now) {
         setCount(Number(c?.count))
@@ -56,7 +56,7 @@ export default function Root() {
       //   // setCount(Number(a))
       // } else {
       //   let num = Number(prompt("Сколько воды?"))
-      //   setcountDay(num)
+      //   setCountDay(num)
       //   setMass(new Array(num).fill(0))
       // }
     }
@@ -156,7 +156,7 @@ export default function Root() {
       if (!errorInput) {
         await AsyncStorage.setItem("countDay", text)
         setFisrtRun(false)
-        setcountDay(Number(text))
+        setCountDay(Number(text))
       }
     }
     ttt()
