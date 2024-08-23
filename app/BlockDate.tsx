@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
-import { getData, getDataAllDays, setDataAllDays, widthPers } from "../scripts/_getData";
+import { getAllDays, getData, widthPers } from "../scripts/_getData";
 import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
@@ -10,8 +10,8 @@ interface Day {
     complete: boolean
 }
 
-// var now = moment().format("DD");
-var now = 18
+var now = moment().format("DD/MM");
+// var now = 18
 
 var monthNow = Number(moment().format("M")) - 1;
 var yearNow = Number(moment().format("Y"))
@@ -23,7 +23,7 @@ var first = Number(moment().format("M")) - 1
 var end = Number(moment().format("M")) - 1
 
 var ddd = 0
-getDataAllDays().then(v => ddd = v)
+getAllDays().then((v: number) => ddd = v)
 
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
@@ -33,12 +33,12 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
 
     useEffect(() => {
         let f = async () => {
-            let a = await AsyncStorage.getItem("start")
+            let a = await AsyncStorage.getItem("first")
             if (a) {
                 first = parseInt(a)
             }
 
-            a = await AsyncStorage.getItem("end")
+            a = await AsyncStorage.getItem("last")
             if (a) {
                 end = parseInt(a)
             }
@@ -56,12 +56,11 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
 
     useEffect(() => {
         const ttt = async () => {
-            let data: string | null = null
-            await getData().then(res => { if (res) { data = JSON.parse(res) } })
+            let data = await getData()
 
             setMonthArr(days =>
                 days.map((v) => {
-                    if (data && data[`${v.num}/${month}`]?.complete) {
+                    if (data && data[`${v.num}/${month}`]) {
                         return { num: v.num, complete: true }
                     }
                     return v
@@ -76,8 +75,8 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
         const func = async () => {
             let oldData = {}
             await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
-            if (props.complete && oldData[`${now}/7`] == null) {
-                setDataAllDays(allDays + 1)
+            console.log(oldData);    
+            if (props.complete && oldData[now] == null) {
                 setAllDays(v => v + 1)
             }
         }
