@@ -11,7 +11,6 @@ import { useNotificationObserver } from "@/scripts/useNotificationObserver";
 import { styles } from "@/scripts/_styles";
 
 var now = moment().format("DD/MM");
-// var now = "18/7"
 
 export default function Root() {
   const [countDay, setCountDay] = useState(10) //количество стаканов за день
@@ -110,14 +109,14 @@ export default function Root() {
 
   //закрытие модального окна
   const handleClickModal = () => {
-    const ttt = async () => {
+    const asyncFunc = async () => {
       if (!errorInput) {
         setMaxWaterDay(textModal)
         setFirstRun(false)
         setCountDay(Number(textModal))
       }
     }
-    ttt()
+    asyncFunc()
   }
 
   //нажатие по разделу с настройками
