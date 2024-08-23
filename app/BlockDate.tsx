@@ -11,90 +11,84 @@ interface Day {
 }
 
 var now = moment().format("DD/MM");
-// var now = 18
 
-var monthNow = Number(moment().format("M")) - 1;
+var monthNow = Number(moment().format("MM"));
 var yearNow = Number(moment().format("Y"))
 var dayWeek = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 var listMonth = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 
 var first = Number(moment().format("M")) - 1
-var end = Number(moment().format("M")) - 1
+var last = Number(moment().format("M")) - 1
 
-var ddd = 0
-getAllDays().then((v: number) => ddd = v)
+var countAllDays = 0
+getAllDays().then((v: number) => countAllDays = v)
 
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
-    const [allDays, setAllDays] = useState(ddd)
+    const [allDays, setAllDays] = useState(countAllDays)
     const [maxDay, setMaxDay] = useState(0)
 
-    useEffect(() => {
-        let f = async () => {
-            let a = await AsyncStorage.getItem("first")
-            if (a) {
-                first = parseInt(a)
-            }
 
-            a = await AsyncStorage.getItem("last")
-            if (a) {
-                end = parseInt(a)
-            }
+    //получение первого и последнего входа в приложение
+    useEffect(() => {
+        let checkFirstAndLast = async () => {
+            await AsyncStorage.getItem("first").then(v => { if (v) { first = parseInt(v) } })
+            await AsyncStorage.getItem("last").then(v => { if (v) { last = parseInt(v) } })
         }
-        f()
-        let date = new Date(yearNow, month, 1)
+        checkFirstAndLast()
+    }, [])
+
+    useEffect(() => {
+        //получение массива выбранного месяца
+        let date = new Date(yearNow, month - 1, 1)
         let weekDay = date.getDay()
         let days = new Array<Day>(listDayWeek[weekDay]).fill({ num: -1, complete: false })
-        while (date.getMonth() === month) {
+
+        while (date.getMonth() === month - 1) {
             days.push({ num: new Date(date).getDate(), complete: false });
             date.setDate(date.getDate() + 1);
         }
+
         setMonthArr(days)
-    }, [month, props.activeDate])
 
-    useEffect(() => {
-        const ttt = async () => {
+        //уставновка выполненных дней
+        const completeDays = async () => {
             let data = await getData()
-
             setMonthArr(days =>
                 days.map((v) => {
-                    if (data && data[`${v.num}/${month}`]) {
+                    let str = month < 10 ? v.num + "/0" + month : v.num + "/" + month
+                    if (data != null && data[str]) {
                         return { num: v.num, complete: true }
                     }
                     return v
                 })
             )
         }
+        completeDays()
 
-        ttt()
     }, [month, props.activeDate])
 
+
     useEffect(() => {
-        const func = async () => {
-            let oldData = {}
-            await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
-            console.log(oldData);    
-            if (props.complete && oldData[now] == null) {
+        //добавлнение выполненного сегодня дня в количество выполненных дней
+        const addNowDay = async () => {
+            let oldData = await getData()
+            if (props.complete == true && oldData[now] == null)
                 setAllDays(v => v + 1)
-            }
         }
-        func()
+        addNowDay()
     }, [props.complete])
 
-    // useEffect(() => {
-    //     getDataAllDays(setAllDays)
-    // }, [props.activeDate])
-
     const handleNext = () => {
-        // if (month != end) {
-        if (month != 11) {
-            setMonth(n => n + 1)
-        } else {
-            setMonth(0)
+        if (month != first + 3) {
+            if (month != 11) {
+                setMonth(n => n + 1)
+            } else {
+                setMonth(0)
+            }
         }
-        // }
     }
 
     const handlePrev = () => {
@@ -120,7 +114,7 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                 </View>
             </View>
             <View style={{ marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
-                <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month]}</Text>
+                <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month - 1]}</Text>
                 <TouchableWithoutFeedback onPress={handlePrev}>
                     <Svg
                         width={widthPers * 8}

@@ -23,6 +23,7 @@ const baseData = {
 export async function getData() {
     let data = {}
     await AsyncStorage.getItem("data").then(v => { if (v) { data = JSON.parse(v) } })
+
     return data
 }
 
@@ -44,9 +45,8 @@ interface Drink {
 export async function getWaterDay(setCount: Function) {
     let count: Drink = { count: 0, date: "" }
     let now = moment().format("DD/MM");
-    // var now = "18/7"
     await AsyncStorage.getItem("drink").then(res => { if (res) { count = JSON.parse(res) } })
-    
+
     if (count.date == now) {
         setCount(Number(count?.count))
     }
@@ -58,8 +58,7 @@ export async function getWaterDay(setCount: Function) {
 export async function getAllDays() {
     let data = {}
     await AsyncStorage.getItem("data").then(v => { if (v) { data = JSON.parse(v) } })
-    console.log(data);
-    
+
     return Object.keys(data).length
 }
 
