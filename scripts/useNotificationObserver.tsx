@@ -35,17 +35,32 @@ export function useNotificationObserver() {
         //   "Notification received!",
         //   notification?.request.content.body || notification.data?.body
         // ); // Handle notification content based on platform
-        console.log(notification);
+        console.log("Уведомление пришло!");
     };
 
     const sendNotification = () => {
-        console.log("Уведомление отправлено");
+        console.log("Подписка на уведомления");
         Notifications.scheduleNotificationAsync({
             content: {
-                title: "Уведомление",
-                body: "Проверка уведомления!",
+                title: "Напоминание",
+                body: "💧 Не забывайте пить воду 💧",
             },
-            trigger: { seconds: 5 },
+            trigger: {
+               hour: 10,
+               minute: 0,
+               repeats: true
+            },
+        });
+        Notifications.scheduleNotificationAsync({
+            content: {
+                title: "Напоминание",
+                body: "💧 Не забывайте пить воду 💧",
+            },
+            trigger: {
+               hour: 16,
+               minute: 0,
+               repeats: true
+            },
         });
     };
 

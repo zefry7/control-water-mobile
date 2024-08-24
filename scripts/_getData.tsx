@@ -63,9 +63,11 @@ export async function getAllDays() {
 }
 
 //получение первого дня; если его нет, определить
-export async function checkFirstDay() {
+export async function checkFirstDay(sendNotification: () => void) {
     let start = await AsyncStorage.getItem("first")
     if (!start) {
+        //подписка на уведомление
+        sendNotification()
         var month = Number(moment().format("M")) - 1
         await AsyncStorage.setItem("first", month.toString())
     }

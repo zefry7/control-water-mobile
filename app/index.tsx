@@ -31,7 +31,7 @@ export default function Root() {
   //получение данных
   useEffect(() => {
     const checkData = async () => {
-      await checkFirstDay()
+      await checkFirstDay(sendNotification)
       await checkLastDay()
       await getWaterDay(setCount)
       await getMaxWaterDay(setFirstRun, setCountDay)
