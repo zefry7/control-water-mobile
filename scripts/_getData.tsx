@@ -12,6 +12,7 @@ const baseData = {
         date: "23/5" //для проверки на новый или тот же день
     },
     maxWaterDay: 7, //количество стаканов воды в день
+    fireDay: 5,
     data: { //список выполненных дней
         "23/7": true,
         "24/7": true
@@ -62,26 +63,6 @@ export async function getAllDays() {
     return Object.keys(data).length
 }
 
-//получение первого дня; если его нет, определить
-export async function checkFirstDay(sendNotification: () => void) {
-    let start = await AsyncStorage.getItem("first")
-    if (!start) {
-        //подписка на уведомление
-        sendNotification()
-        var month = Number(moment().format("M")) - 1
-        await AsyncStorage.setItem("first", month.toString())
-    }
-}
-
-//получение последнего дня; если его нет, определить
-export async function checkLastDay() {
-    let end = await AsyncStorage.getItem("last")
-    if (!end) {
-        var month = Number(moment().format("M")) - 1
-        await AsyncStorage.setItem("last", month.toString())
-    }
-}
-
 //получение максимального количества воды в день
 export async function getMaxWaterDay(setFirstRun: Function, setCountDay: Function) {
     let t = await AsyncStorage.getItem("maxWaterDay")
@@ -103,4 +84,32 @@ export function activeAnimated(nameAnimated: Animated.Value | Animated.ValueXY, 
         duration: time,
         useNativeDriver: false
     }).start()
+}
+
+//получение первого дня; если его нет, определить
+export async function checkFirstDay(sendNotification?: () => void) {
+    let start = await AsyncStorage.getItem("first")
+    if (!start) {
+        //подписка на уведомление
+        if (sendNotification)
+            sendNotification()
+        start = moment().format("DD/MM/YYYY")
+        await AsyncStorage.setItem("first", start)
+    }
+    return start
+}
+
+//получение последнего дня; если его нет, определить
+export async function checkLastDay() {
+    let end = await AsyncStorage.getItem("last")
+    if (!end) {
+        end = moment().format("DD/MM/YYYY")
+        await AsyncStorage.setItem("last", end)
+    } else {
+        let now = moment().format("DD/MM/YYYY")
+        if(now != end) {
+            await AsyncStorage.setItem("last", end)
+        }
+    }
+    return end
 }

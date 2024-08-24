@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
-import { getAllDays, getData, widthPers } from "../scripts/_getData";
+import { checkFirstDay, checkLastDay, getAllDays, getData, widthPers } from "../scripts/_getData";
 import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
@@ -13,29 +13,29 @@ interface Day {
 var now = moment().format("DD/MM");
 
 var monthNow = Number(moment().format("MM"));
-var yearNow = Number(moment().format("Y"))
+var yearNow = Number(moment().format("YYYY"))
 var dayWeek = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 var listMonth = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 
-var first = Number(moment().format("M")) - 1
-var last = Number(moment().format("M")) - 1
+var first = moment().format("DD/MM/YYYY")
+var last = moment().format("DD/MM/YYYY")
 
 var countAllDays = 0
 getAllDays().then((v: number) => countAllDays = v)
 
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
+    const [year, setYear] = useState(yearNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
     const [allDays, setAllDays] = useState(countAllDays)
     const [maxDay, setMaxDay] = useState(0)
 
-
     //получение первого и последнего входа в приложение
     useEffect(() => {
         let checkFirstAndLast = async () => {
-            await AsyncStorage.getItem("first").then(v => { if (v) { first = parseInt(v) } })
-            await AsyncStorage.getItem("last").then(v => { if (v) { last = parseInt(v) } })
+            first = await checkFirstDay()
+            last = await checkLastDay()
         }
         checkFirstAndLast()
     }, [])
@@ -82,21 +82,35 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     }, [props.complete])
 
     const handleNext = () => {
-        if (month != first + 3) {
-            if (month != 11) {
+        let borderMonth, borderYear
+        let border = last.split("/")
+        if ((Number(border[1]) + 2) / 12 > 1) {
+            borderMonth = Number(border[1]) == 11 ? 1 : 2
+            borderYear = Number(border[2]) + 1
+        }
+        else {
+            borderMonth = Number(border[1]) + 2
+            borderYear = Number(border[2])
+        }
+
+        if ((year != borderYear) || (borderMonth > month && year == borderYear)) {
+            if (month != 12) {
                 setMonth(n => n + 1)
             } else {
-                setMonth(0)
+                setMonth(1)
+                setYear(y => y + 1)
             }
         }
     }
 
     const handlePrev = () => {
-        if (month != first) {
-            if (month != 0) {
+        let border = first.split("/")
+        if ((Number(border[1]) < month && year == Number(border[2])) || (year > Number(border[2]))) {
+            if (month != 1) {
                 setMonth(n => n - 1)
             } else {
-                setMonth(11)
+                setMonth(12)
+                setYear(y => y - 1)
             }
         }
     }
@@ -115,7 +129,7 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
             </View>
             <View style={{ marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
                 <Text style={{ fontSize: 20, fontWeight: "500", marginRight: "auto" }}>{listMonth[month - 1]}</Text>
-                <TouchableWithoutFeedback onPress={handlePrev}>
+                <TouchableWithoutFeedback onPressIn={handlePrev}>
                     <Svg
                         width={widthPers * 8}
                         height={widthPers * 8}
@@ -134,7 +148,7 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                         </G>
                     </Svg>
                 </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={handleNext}>
+                <TouchableWithoutFeedback onPressIn={handleNext}>
                     <Svg
                         width={widthPers * 8}
                         height={widthPers * 8}
