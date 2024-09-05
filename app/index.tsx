@@ -26,8 +26,10 @@ export default function Root() {
   const [infoText, setInfoText] = useState(false)
   const [lang, setLang] = useState<keyof typeof langData>("ru")
   const [selectorLang, setSelectorLang] = useState("ru")
+
   const animGlass = useState(new Animated.Value(130))[0] //анимация при нажатии на главную кнопку
   const animDate = useState(new Animated.Value(600))[0] //анимация при нажатии на раздел с календарём
+  const animOpacityModal = useState(new Animated.Value(0))[0]
 
   const sendNotification = useNotificationObserver()
 
@@ -104,7 +106,13 @@ export default function Root() {
   //нажатие по разделу с календарём
   const handleClickDate = () => {
     if (firstRun) {
-      setFirstRun(false)
+      activeAnimated(animOpacityModal, 0, 150)
+      !activeDate ? activeAnimated(animDate, 0, 300) : activeAnimated(animDate, 600, 300)
+      setTimeout(() => {
+        setFirstRun(false)
+        setActiveDate(v => !v)
+      }, 300);
+      return
     }
     !activeDate ? activeAnimated(animDate, 0, 300) : activeAnimated(animDate, 600, 300)
     setActiveDate(v => !v)
@@ -127,10 +135,20 @@ export default function Root() {
 
   //нажатие по разделу с настройками
   const handleClickSetting = () => {
-    setFirstRun(v => !v)
+
     if (activeDate) {
       activeAnimated(animDate, 600, 300)
       setActiveDate(v => !v)
+    }
+
+    if (firstRun) {
+      activeAnimated(animOpacityModal, 0, 150)
+      setTimeout(() => {
+        setFirstRun(v => !v)
+      }, 150)
+    } else {
+      setFirstRun(v => !v)
+      activeAnimated(animOpacityModal, 1, 150)
     }
   }
 
@@ -203,18 +221,18 @@ export default function Root() {
           </ScrollView>
         }
         {firstRun == true &&
-          <View style={styles.modelWrapper}>
+          <Animated.View style={[styles.modelWrapper, { opacity: animOpacityModal }]}>
             <Text style={{ fontSize: 20, fontWeight: "500", lineHeight: 20, color: "#1976d2" }}>
               {langData[lang].titleSetting}
             </Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <TouchableWithoutFeedback onPressIn={() => handleChangeLang("ru")}>
                 <View style={{ backgroundColor: "#2196f3", height: 30, width: 30 }}>
-                  <Text style={[{ textAlign: "center", lineHeight: 30, color: "white" }, selectorLang != "ru" && {opacity: 0.5}]}>Ru</Text>
+                  <Text style={[{ textAlign: "center", lineHeight: 30, color: "white" }, selectorLang != "ru" && { opacity: 0.5 }]}>Ru</Text>
                 </View>
               </TouchableWithoutFeedback>
               <TouchableWithoutFeedback onPressIn={() => handleChangeLang("en")}>
-                <View style={[{ backgroundColor: "#2196f3", height: 30, width: 30 }, selectorLang != "en" && {opacity: 0.5}]}>
+                <View style={[{ backgroundColor: "#2196f3", height: 30, width: 30 }, selectorLang != "en" && { opacity: 0.5 }]}>
                   <Text style={{ textAlign: "center", lineHeight: 30, color: "white" }}>En</Text>
                 </View>
               </TouchableWithoutFeedback>
@@ -229,9 +247,9 @@ export default function Root() {
               }
             </View>
             <TouchableWithoutFeedback onPress={handleClickModal}>
-              <Text style={{ textAlign: "center", color: "white", backgroundColor:"#2196f3", padding:8, borderRadius:5, minWidth:90 }}>{langData[lang].textButtonSave}</Text>
+              <Text style={{ textAlign: "center", color: "white", backgroundColor: "#2196f3", padding: 8, borderRadius: 5, minWidth: 90 }}>{langData[lang].textButtonSave}</Text>
             </TouchableWithoutFeedback>
-          </View>
+          </Animated.View>
         }
         <View style={styles.header}>
           <TouchableWithoutFeedback onPressIn={handleClickSetting}>
