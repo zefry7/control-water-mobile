@@ -1,14 +1,15 @@
-import React, { useMemo, useRef } from "react";
+import React, { SetStateAction, useMemo, useRef } from "react";
 import { useEffect, useState } from "react";
 import { Text, View, ScrollView, TextInput, StyleSheet, SafeAreaView, Image, TouchableWithoutFeedback, Animated, Dimensions, Button, Platform, Alert, StatusBar } from "react-native";
 import AnimatedProgressWheel from 'react-native-progress-wheel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import BlockDate from "./BlockDate";
-import { checkFirstDay, checkLastDay, getWaterDay, getMaxWaterDay, setWaterDay, widthPers, activeAnimated, setMaxWaterDay } from "../scripts/_getData";
+import { checkFirstDay, checkLastDay, getWaterDay, getMaxWaterDay, setWaterDay, widthPers, activeAnimated, setMaxWaterDay, getLangApplication, setLangApplication } from "../scripts/_getData";
 import Svg, { Path } from "react-native-svg";
 import { useNotificationObserver } from "@/scripts/useNotificationObserver";
 import { styles } from "@/scripts/_styles";
+import { langData } from "@/scripts/_langData";
 
 var now = moment().format("DD/MM");
 
@@ -23,6 +24,8 @@ export default function Root() {
   const [loading, setLoading] = useState(false) //проверка загрузки контента
   const [errorInput, setErrorInput] = useState(false) //проверка на ошибку в модальном окне
   const [infoText, setInfoText] = useState(false)
+  const [lang, setLang] = useState<keyof typeof langData>("ru")
+  const [selectorLang, setSelectorLang] = useState("ru")
   const animGlass = useState(new Animated.Value(130))[0] //анимация при нажатии на главную кнопку
   const animDate = useState(new Animated.Value(600))[0] //анимация при нажатии на раздел с календарём
 
@@ -31,6 +34,7 @@ export default function Root() {
   //получение данных
   useEffect(() => {
     const checkData = async () => {
+      await getLangApplication(setLang, setSelectorLang)
       await checkFirstDay(sendNotification)
       await checkLastDay()
       await getWaterDay(setCount)
@@ -111,6 +115,8 @@ export default function Root() {
   const handleClickModal = () => {
     const asyncFunc = async () => {
       if (!errorInput) {
+        setLang(selectorLang as SetStateAction<"ru" | "en">)
+        setLangApplication(selectorLang.toString())
         setMaxWaterDay(textModal)
         setFirstRun(false)
         setCountDay(Number(textModal))
@@ -142,28 +148,14 @@ export default function Root() {
     }
   }
 
+  const handleChangeLang = (strLang: string) => {
+    setSelectorLang(strLang)
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="#2196f3" barStyle={"dark-content"} />
       <SafeAreaView style={styles.root}>
-        <View style={styles.header}>
-          <TouchableWithoutFeedback onPressIn={handleClickSetting}>
-            <View style={[styles.headerWrapperIcon, { height: 48, width: 48, left: 6, top: 6 }]}>
-              <Image source={require("../assets/images/setting.png")} style={styles.headerIcon} />
-            </View>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPressIn={sendNotification}>
-            <View style={[styles.headerWrapperIcon, { height: 26, width: 70, left: 60, top: 17 }]}>
-              <Text style={{ fontSize: 10 }}>Уведомление</Text>
-            </View>
-          </TouchableWithoutFeedback>
-          <Text style={styles.headerText}>Logo</Text>
-          <TouchableWithoutFeedback onPressIn={handleClickDate}>
-            <View style={[styles.headerWrapperIcon, { height: 48, width: 48, right: 6, top: 6 }]}>
-              <Image source={require("../assets/images/date.png")} style={styles.headerIcon} />
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
         {loading &&
           <ScrollView style={styles.main} contentContainerStyle={{ flex: 1 }}>
             <View style={{ flex: 1, width: "100%", justifyContent: "center", alignItems: "center", paddingVertical: (widthPers * 11) }}>
@@ -212,19 +204,52 @@ export default function Root() {
         }
         {firstRun == true &&
           <View style={styles.modelWrapper}>
-            <Text style={{ fontSize: 20, fontWeight: "500", lineHeight: 20, color: "#1976d2" }}>Настройки</Text>
+            <Text style={{ fontSize: 20, fontWeight: "500", lineHeight: 20, color: "#1976d2" }}>
+              {langData[lang].titleSetting}
+            </Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableWithoutFeedback onPressIn={() => handleChangeLang("ru")}>
+                <View style={{ backgroundColor: "#2196f3", height: 30, width: 30 }}>
+                  <Text style={[{ textAlign: "center", lineHeight: 30, color: "white" }, selectorLang != "ru" && {opacity: 0.5}]}>Ru</Text>
+                </View>
+              </TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPressIn={() => handleChangeLang("en")}>
+                <View style={[{ backgroundColor: "#2196f3", height: 30, width: 30 }, selectorLang != "en" && {opacity: 0.5}]}>
+                  <Text style={{ textAlign: "center", lineHeight: 30, color: "white" }}>En</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
             <View style={{ alignItems: "center", position: "relative" }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <TextInput style={[styles.inputMax, errorInput && styles.inputMaxInvalid]} keyboardType="number-pad" value={textModal} onChangeText={(v) => handleChangeInput(v)} />
-                <Text style={{ fontSize: 18, color: "#1976D2", fontWeight: "500" }}> = {Number(textModal) * 250} мл</Text>
+                <Text style={{ fontSize: 18, color: "#1976D2", fontWeight: "500" }}> = {Number(textModal) * 250} {langData[lang].ml}</Text>
               </View>
               {infoText &&
-                <Text style={{ fontSize: 12, color: "red", position: "absolute", bottom: -22 }}>Допустимый диапазон от 1 до 10</Text>
+                <Text style={{ fontSize: 12, color: "red" }}>Допустимый диапазон от 1 до 10</Text>
               }
             </View>
-            <Button title="Click" onPress={handleClickModal} />
+            <TouchableWithoutFeedback onPress={handleClickModal}>
+              <Text style={{ textAlign: "center", color: "white", backgroundColor:"#2196f3", padding:8, borderRadius:5, minWidth:90 }}>{langData[lang].textButtonSave}</Text>
+            </TouchableWithoutFeedback>
           </View>
         }
+        <View style={styles.header}>
+          <TouchableWithoutFeedback onPressIn={handleClickSetting}>
+            <View style={[styles.headerWrapperIcon, { height: 48, width: 48, left: 6, top: 6 }]}>
+              <Image source={require("../assets/images/setting.png")} style={styles.headerIcon} />
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPressIn={sendNotification}>
+            <View style={[styles.headerWrapperIcon, { height: 26, width: 70, left: 60, top: 17 }]}>
+              <Text style={{ fontSize: 10 }}>Уведомление</Text>
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPressIn={handleClickDate}>
+            <View style={[styles.headerWrapperIcon, { height: 48, width: 48, right: 6, top: 6 }]}>
+              <Image source={require("../assets/images/date.png")} style={styles.headerIcon} />
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
       </SafeAreaView>
     </View>
   );

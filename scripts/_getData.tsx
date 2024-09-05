@@ -13,6 +13,7 @@ const baseData = {
     },
     maxWaterDay: 7, //количество стаканов воды в день
     fireDay: 5,
+    lang: "ru" || "en",
     data: { //список выполненных дней
         "23/7": true,
         "24/7": true
@@ -112,4 +113,21 @@ export async function checkLastDay() {
         }
     }
     return end
+}
+
+export async function getLangApplication(setLang: Function, selectorLang: Function) {
+    let lang = await AsyncStorage.getItem("lang")
+    if(lang) {
+        setLang(lang)
+        selectorLang(lang)
+    } else {
+        setLang("ru")
+        selectorLang("ru")
+    }
+    console.log(lang || "ru");
+    
+}
+
+export async function setLangApplication(lang: string) {
+    await AsyncStorage.setItem("lang", lang)
 }

@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
       top: "50%",
       left: "50%",
       width: 250,
-      height: 200,
+      minHeight: 200,
       backgroundColor: "#BBDEFB",
       zIndex: 120,
       transform: [{ translateX: -125 }, { translateY: -100 }],
@@ -70,7 +70,8 @@ export const styles = StyleSheet.create({
       borderWidth: 2,
       paddingHorizontal: 5,
       borderColor: "#1976d2",
-      borderRadius: 10
+      borderRadius: 10,
+      textAlign:"center"
     },
     inputMaxInvalid: {
       borderColor: "red"
