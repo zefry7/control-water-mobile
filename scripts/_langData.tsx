@@ -2,11 +2,21 @@ export const langData = {
     ru: {
         titleSetting: "Настройки",
         ml: "мл",
-        textButtonSave: "Сохранить"
+        textButtonSave: "Сохранить",
+        tutorial: {
+            button: "Далее",
+            titleLang: "Выбор языка",
+            titleGender: "Выбор пола"
+        }
     },
     en: {
         titleSetting: "Settings",
         ml: "ml",
-        textButtonSave: "Save"
+        textButtonSave: "Save",
+        tutorial: {
+            button: "Next",
+            titleLang: "Select language",
+            titleGender: "Select gender"
+        }
     }
 }
