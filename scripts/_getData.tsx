@@ -65,11 +65,9 @@ export async function getAllDays() {
 }
 
 //получение максимального количества воды в день
-export async function getMaxWaterDay(setFirstRun: Function, setCountDay: Function) {
+export async function getMaxWaterDay(setCountDay: Function) {
     let t = await AsyncStorage.getItem("maxWaterDay")
-    if (!t) {
-        setFirstRun(true)
-    } else {
+    if (t) {
         setCountDay(Number(t))
     }
 }
@@ -92,8 +90,7 @@ export async function checkFirstDay(sendNotification?: () => void) {
     let start = await AsyncStorage.getItem("first")
     if (!start) {
         //подписка на уведомление
-        if (sendNotification)
-            sendNotification()
+        if (sendNotification) sendNotification()
         start = moment().format("DD/MM/YYYY")
         await AsyncStorage.setItem("first", start)
     }

@@ -42,32 +42,35 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
 
     useEffect(() => {
         //получение массива выбранного месяца
-        let date = new Date(yearNow, month - 1, 1)
-        let weekDay = date.getDay()
-        let days = new Array<Day>(listDayWeek[weekDay]).fill({ num: -1, complete: false })
+        if (props.activeDate) {
+            let date = new Date(yearNow, month - 1, 1)
+            let weekDay = date.getDay()
+            let days = new Array<Day>(listDayWeek[weekDay]).fill({ num: -1, complete: false })
 
-        while (date.getMonth() === month - 1) {
-            days.push({ num: new Date(date).getDate(), complete: false });
-            date.setDate(date.getDate() + 1);
+            while (date.getMonth() === month - 1) {
+                days.push({ num: new Date(date).getDate(), complete: false });
+                date.setDate(date.getDate() + 1);
+            }
+
+            setMonthArr(days)
+
+            //уставновка выполненных дней
+            const completeDays = async () => {
+                let data = await getData()
+                setMonthArr(days =>
+                    days.map((v) => {
+                        let strM = month < 10 ? "/0" + month : "/" + month
+                        let strD = v.num < 10 ? "0" + v.num : v.num
+                        let str = strD + strM
+                        if (data != null && data[str]) {
+                            return { num: v.num, complete: true }
+                        }
+                        return v
+                    })
+                )
+            }
+            completeDays()
         }
-
-        setMonthArr(days)
-
-        //уставновка выполненных дней
-        const completeDays = async () => {
-            let data = await getData()
-            setMonthArr(days =>
-                days.map((v) => {
-                    let str = month < 10 ? v.num + "/0" + month : v.num + "/" + month
-                    if (data != null && data[str]) {
-                        return { num: v.num, complete: true }
-                    }
-                    return v
-                })
-            )
-        }
-        completeDays()
-
     }, [month, props.activeDate])
 
 
