@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
       flex: 1,
       fontWeight: "500",
       overflow: "hidden",
-      height: "100%"
+      height: "100%",
     },
     header: {
       backgroundColor: "#2196f3",

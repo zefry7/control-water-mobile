@@ -6,7 +6,8 @@ export const langData = {
         tutorial: {
             button: "Далее",
             titleLang: "Выбор языка",
-            titleGender: "Выбор пола"
+            titleGender: "Выбор пола",
+            titleWeight: "Укажите свой вес"
         }
     },
     en: {
@@ -16,7 +17,8 @@ export const langData = {
         tutorial: {
             button: "Next",
             titleLang: "Select language",
-            titleGender: "Select gender"
+            titleGender: "Select gender",
+            titleWeight: "Weight"
         }
     }
 }

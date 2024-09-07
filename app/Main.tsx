@@ -146,7 +146,7 @@ export default function Main() {
         if (v.length < 3 && (v.slice(v.length - 1, v.length).match(/[0-9]/) || v == "")) {
             setTextModal(v)
             setInfoText(false)
-            if (Number(v) >= 1 && Number(v) <= 20) {
+            if (Number(v) >= 1 && Number(v) <= 25) {
                 setErrorInput(false)
             } else {
                 setErrorInput(true)
