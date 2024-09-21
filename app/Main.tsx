@@ -5,13 +5,15 @@ import AnimatedProgressWheel from 'react-native-progress-wheel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 import BlockDate from "./BlockDate";
-import { checkFirstDay, checkLastDay, getWaterDay, getMaxWaterDay, setWaterDay, widthPers, activeAnimated, setMaxWaterDay, getLangApplication, setLangApplication } from "../scripts/_getData";
+import { checkFirstDay, checkLastDay, getWaterDay, getMaxWaterDay, setWaterDay, widthPers, activeAnimated, setMaxWaterDay, getLangApplication, setLangApplication, setFireDay, getLastDayFireDay, comparisonDates, nullFireDay, getData, checkFireDay } from "../scripts/_getData";
 import Svg, { Path } from "react-native-svg";
 import { useNotificationObserver } from "@/scripts/useNotificationObserver";
 import { styles } from "@/scripts/_styles";
 import { langData } from "@/scripts/_langData";
 
 var now = moment().format("DD/MM");
+
+// var now = "22/09"
 
 export default function Main() {
     const [countDay, setCountDay] = useState(10) //количество стаканов за день
@@ -39,8 +41,16 @@ export default function Main() {
             await getLangApplication(setLang, setSelectorLang)
             await checkFirstDay(sendNotification)
             await checkLastDay()
-            await getWaterDay(setCount)
+            await getWaterDay(setCount, now)
             await getMaxWaterDay(setCountDay)
+            let ldfd = await getLastDayFireDay() 
+            if(ldfd != null && checkFireDay(ldfd, now)) {
+                await nullFireDay()
+            }
+            let oldData = await getData()
+            if (oldData[now] != null) {
+                setComplete(true)
+            }
             setLoading(true)
         }
 
@@ -50,37 +60,32 @@ export default function Main() {
     //изменение количества отображения стаканов
     useEffect(() => {
         setMass(new Array(countDay).fill(0))
-        if (countDay < count) {
-            setCount(countDay)
-        }
-    }, [countDay])
-
-    useEffect(() => {
-        const addItem = async (a: any) => {
-            let oldData = {}
-            await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
-            await AsyncStorage.setItem("data", JSON.stringify({ ...oldData, ...a }))
-        }
-
-        if (complete) {
-            let a = {
-                [now]: true
-            }
-            addItem(a)
-        }
-    }, [complete])
-
-    useEffect(() => {
         if (countDay <= count) {
+            setCount(countDay)
             setComplete(true)
         }
-    }, [count])
+    }, [countDay])
 
     const handleClickButton = () => {
         if (countDay > count) {
             activeAnimated(animGlass, 150, 300)
             setWaterDay(count + 1, now)
             setCount(count => count + 1)
+
+            if (countDay <= count + 1) {
+                const addItem = async (a: any) => {
+                    let oldData = {}
+                    await AsyncStorage.getItem("data").then(v => { if (v) { oldData = JSON.parse(v || "") } })
+                    await AsyncStorage.setItem("data", JSON.stringify({ ...oldData, ...a }))
+                    await setFireDay()
+                    setComplete(true)
+                }
+
+                let a = {
+                    [now]: true
+                }
+                addItem(a)
+            }
 
             setTimeout(() => {
                 activeAnimated(animGlass, 130, 300)
@@ -164,7 +169,7 @@ export default function Main() {
             {loading &&
                 <ScrollView style={styles.main} contentContainerStyle={{ flex: 1 }}>
                     <View style={{ flex: 1, width: "100%", justifyContent: "center", alignItems: "center", paddingVertical: (widthPers * 11), position: "relative" }}>
-                        <View style={{ justifyContent: "center", alignItems: "center", width:widthPers * 88, height: (widthPers * 88), position: "relative", marginBottom: (widthPers * 8) }}>
+                        <View style={{ justifyContent: "center", alignItems: "center", width: widthPers * 88, height: (widthPers * 88), position: "relative", marginBottom: (widthPers * 8) }}>
                             <Text style={{ fontSize: 20, color: 'white', fontWeight: "500", backgroundColor: "#1976D2", padding: 5, borderRadius: 15, paddingHorizontal: 10, marginBottom: 10 }}>{now.replace("/", ".")}</Text>
                             <View style={styles.wrapperCircle}>
                                 <AnimatedProgressWheel size={widthPers * 88} width={widthPers * 2} color={'#1976D2'} progress={count * 100 / countDay} backgroundColor={'#BBDEFB'} rotation="-90deg" duration={600} />
@@ -187,7 +192,7 @@ export default function Main() {
                                 }
                             </View>
                             <Text style={{ fontSize: 20, color: 'white', fontWeight: "500", backgroundColor: "#1976D2", padding: 5, borderRadius: 15, paddingHorizontal: 10 }}>{count * 250} мл</Text>
-                            <Text style={{ position: "absolute", bottom: -60, left:0, alignSelf: "flex-start", fontSize: 18, color: 'white', fontWeight: "500", backgroundColor: "#1976D2", padding: 5, borderRadius: 15, paddingHorizontal: 10 }}>Выпито стаканов: {count}/{countDay}</Text>
+                            <Text style={{ position: "absolute", bottom: -60, left: 0, alignSelf: "flex-start", fontSize: 18, color: 'white', fontWeight: "500", backgroundColor: "#1976D2", padding: 5, borderRadius: 15, paddingHorizontal: 10 }}>Выпито стаканов: {count}/{countDay}</Text>
                         </View>
                     </View>
                     <BlockDate animDate={animDate} complete={complete} activeDate={activeDate} />

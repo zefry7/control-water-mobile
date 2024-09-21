@@ -12,8 +12,10 @@ const baseData = {
         date: "23/5" //для проверки на новый или тот же день
     },
     maxWaterDay: 7, //количество стаканов воды в день
-    fireDay: 5,
-    lang: "ru" || "en",
+    fireDay: 5, //количество дней подряд
+    lastDayFireDay: "22/8", //последний день выполнения подряд
+    maxFireDay: 10, //максимальное количество дней подряд
+    lang: "ru" || "en", //выбор языка
     data: { //список выполненных дней
         "23/7": true,
         "24/7": true
@@ -44,9 +46,8 @@ interface Drink {
     count: number,
     date: string
 }
-export async function getWaterDay(setCount: Function) {
+export async function getWaterDay(setCount: Function, now: string) {
     let count: Drink = { count: 0, date: "" }
-    let now = moment().format("DD/MM");
     await AsyncStorage.getItem("drink").then(res => { if (res) { count = JSON.parse(res) } })
 
     if (count.date == now) {
@@ -120,11 +121,53 @@ export async function getLangApplication(setLang: Function, selectorLang: Functi
     } else {
         setLang("ru")
         selectorLang("ru")
-    }
-    console.log(lang || "ru");
-    
+    }    
 }
 
 export async function setLangApplication(lang: string) {
     await AsyncStorage.setItem("lang", lang)
+}
+
+export async function setFireDay() {
+    let fireDayCount = await AsyncStorage.getItem(("fireDay"))
+    if(fireDayCount) {
+        await AsyncStorage.setItem("fireDay", (Number(fireDayCount) + 1).toString())
+    } else {
+        await AsyncStorage.setItem("fireDay", "1")
+    }
+}
+
+export async function getFireDay() {
+    let fireDayCount = await AsyncStorage.getItem(("fireDay"))
+    return Number(fireDayCount)
+}
+
+export async function nullFireDay() {
+    await AsyncStorage.setItem("fireDay", "0")
+    await AsyncStorage.removeItem("lastDayFireDay")
+}
+
+
+export async function setLastDayFireDay(now: string) {
+    await AsyncStorage.setItem("lastDayFireDay", now)
+}
+
+export async function getLastDayFireDay() {
+    let date = await AsyncStorage.getItem(("lastDayFireDay"))
+    return date
+}
+
+export function checkFireDay(date1: string, date2: string) {
+    const d1 = date1.split("/")
+    const d2 = date2.split("/")
+
+    const year = Number(moment().format("YYYY"))
+
+    const convDate1 = new Date(year, Number(d1[1]), Number(d1[0]))
+    const convDate2 = new Date(year, Number(d2[1]), Number(d2[0]))
+
+    console.log(Math.abs(convDate1.getTime() - convDate2.getTime()), 60 * 60 * 24 * 1000);
+    
+
+    return Math.abs(convDate1.getTime() - convDate2.getTime()) > 60 * 60 * 24 * 1000 
 }

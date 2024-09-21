@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { Animated, Image, Text, TouchableWithoutFeedback, View, StyleSheet } from "react-native";
-import { checkFirstDay, checkLastDay, getAllDays, getData, widthPers } from "../scripts/_getData";
+import { checkFirstDay, checkLastDay, comparisonDates, getAllDays, getData, getFireDay, setLastDayFireDay, widthPers } from "../scripts/_getData";
 import Svg, { Path, G } from "react-native-svg";
 
 interface Day {
@@ -11,9 +11,16 @@ interface Day {
 }
 
 var now = moment().format("DD/MM");
-
+var dayNow = Number(moment().format("DD"))
 var monthNow = Number(moment().format("MM"));
 var yearNow = Number(moment().format("YYYY"))
+
+
+// var now = "22/09"
+// var dayNow = 22
+// var monthNow = 9
+// var yearNow = 2024
+
 var dayWeek = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
 var listMonth = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
@@ -21,21 +28,20 @@ var listDayWeek = [6, 0, 1, 2, 3, 4, 5]
 var first = moment().format("DD/MM/YYYY")
 var last = moment().format("DD/MM/YYYY")
 
-var countAllDays = 0
-getAllDays().then((v: number) => countAllDays = v)
-
 function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
     const [month, setMonth] = useState(monthNow)
     const [year, setYear] = useState(yearNow)
     const [monthArr, setMonthArr] = useState(new Array<Day>({ num: -1, complete: false }))
-    const [allDays, setAllDays] = useState(countAllDays)
-    const [maxDay, setMaxDay] = useState(0)
+    const [allDays, setAllDays] = useState(0)
+    const [countFireDay, setCountFireDay] = useState(0)
 
     //получение первого и последнего входа в приложение
     useEffect(() => {
         let checkFirstAndLast = async () => {
             first = await checkFirstDay()
             last = await checkLastDay()
+            setCountFireDay(await getFireDay())
+            setAllDays(await getAllDays())
         }
         checkFirstAndLast()
     }, [])
@@ -78,10 +84,16 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
         //добавлнение выполненного сегодня дня в количество выполненных дней
         const addNowDay = async () => {
             let oldData = await getData()
-            if (props.complete == true && oldData[now] == null)
+            if (oldData[now] == null) {
                 setAllDays(v => v + 1)
+            }
+            let cfd = await getFireDay()
+            setCountFireDay(cfd)
+            await setLastDayFireDay(now)
         }
-        addNowDay()
+
+        if (props.complete == true)
+            addNowDay()
     }, [props.complete])
 
     const handleNext = () => {
@@ -127,7 +139,7 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#E3F2FD", padding: 10, borderRadius: 20 }}>
                     <Text style={{ fontSize: 16 }}>Количество дней подряд</Text>
-                    <Text style={{ backgroundColor: "#90CAF9", fontSize: 18, height: 40, width: 40, borderRadius: 100, textAlign: "center", lineHeight: 40 }}>{maxDay}</Text>
+                    <Text style={{ backgroundColor: "#90CAF9", fontSize: 18, height: 40, width: 40, borderRadius: 100, textAlign: "center", lineHeight: 40 }}>{countFireDay}</Text>
                 </View>
             </View>
             <View style={{ marginBottom: 10, flexDirection: "row", alignItems: "flex-end" }}>
@@ -187,11 +199,11 @@ function BlockDate(props: { animDate: any; complete: any; activeDate: any; }) {
                         </View>
                     }
                     if (v.complete) {
-                        return <View key={i} style={[styles.dataWrapper, styles.dataActive]}>
-                            <Text style={{ fontSize: 16, color: "#e3f2fd", fontWeight: "500" }}>{v.num}</Text>
+                        return <View key={i} style={[styles.dataWrapper, styles.dataActive, monthNow == month && dayNow == v.num && { borderColor: "#64B5F6", borderWidth: 3, borderRadius: 100 }]}>
+                            <Text style={[{ fontSize: 16, color: "#e3f2fd", fontWeight: "500" }]}>{v.num}</Text>
                         </View>
                     }
-                    return <View key={i} style={[styles.dataWrapper, styles.dataDefault]}>
+                    return <View key={i} style={[styles.dataWrapper, styles.dataDefault, monthNow == month && dayNow == v.num && { opacity: 1 }]}>
                         <Text style={{ fontSize: 16, fontWeight: "500" }}>{v.num}</Text>
                     </View>
                 })}
@@ -213,7 +225,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff"
     },
     dataActive: {
-        backgroundColor: "#1976D2",
+        backgroundColor: "#1E88E5",
         opacity: 1
     },
     dataDefault: {

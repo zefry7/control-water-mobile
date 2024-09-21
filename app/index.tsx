@@ -8,7 +8,7 @@ import Tutorial from "./Tutorial";
 
 export default function Root() {
   const [firstRun, setFirstRun] = useState<String>("")
-  const [register, setRegister] = useState<boolean>(false)
+  const [register, setRegister] = useState<boolean>(true)
 
   useEffect(() => {
     async function funcAsync() {
@@ -19,6 +19,7 @@ export default function Root() {
   }, [])
 
   // чистка стора
+
   // useEffect(() => {
   //   let ttt = async () => {
   //     await AsyncStorage.clear()
@@ -28,7 +29,7 @@ export default function Root() {
 
   return (
     <View style={{ flex: 1 }}>
-      <StatusBar backgroundColor="#2196f3" barStyle={"dark-content"} />
+      <StatusBar backgroundColor="#2196f3" />
       <SafeAreaView style={styles.root}>
         {register == true
           ? <Main />
